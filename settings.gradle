@@ -1,0 +1,7 @@
+rootProject.name = 'srta-common'
+
+include 'srta-common-api'
+include 'srta-common-security'
+include 'srta-common-audit'
+include 'srta-common-domain'
+include 'srta-common-web'

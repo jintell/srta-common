@@ -1,0 +1,111 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '4.0.5' apply false
+    id 'io.spring.dependency-management' version '1.1.7'
+    id 'maven-publish'
+}
+
+allprojects {
+    group = 'org.meld-tech.platform'
+    version = '2026.03.1'
+
+    repositories {
+        mavenCentral()
+    }
+}
+
+subprojects {
+    apply plugin: 'java-library'
+    apply plugin: 'org.springframework.boot'
+    apply plugin: 'io.spring.dependency-management'
+    apply plugin: 'maven-publish'
+
+    java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(21)
+        }
+    }
+
+    dependencies {
+        compileOnly 'org.projectlombok:lombok'
+        annotationProcessor 'org.projectlombok:lombok'
+        testCompileOnly 'org.projectlombok:lombok'
+        testAnnotationProcessor 'org.projectlombok:lombok'
+
+        implementation 'com.fasterxml.jackson.core:jackson-databind'
+        implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+
+        testImplementation 'org.springframework.boot:spring-boot-starter-test'
+        testImplementation 'io.projectreactor:reactor-test'
+        testImplementation 'com.tngtech.archunit:archunit-junit5:1.3.0'
+        testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    }
+
+    tasks.named('test') {
+        useJUnitPlatform()
+    }
+
+    bootJar {
+        enabled = false
+    }
+
+    jar {
+        enabled = true
+    }
+
+    publishing {
+        publications {
+            maven(MavenPublication) {
+                from components.java
+            }
+        }
+        repositories {
+            maven {
+                name = "GitHubPackages" //  optional target repository name
+                url = 'https://maven.pkg.github.com/jintell/meld-repo'
+                credentials {
+                    username = System.getenv("GITHUB_ACTOR")
+                    password = System.getenv("GITHUB_TOKEN")
+                }
+            }
+        }
+    }
+}
+
+project(':srta-common-api') {
+    dependencies {
+        implementation 'org.springframework.boot:spring-boot-starter-validation'
+    }
+}
+
+project(':srta-common-web') {
+    dependencies {
+        api project(':srta-common-api')
+        implementation 'org.springframework.boot:spring-boot-starter-webflux'
+        implementation 'org.springdoc:springdoc-openapi-starter-webflux-ui:2.8.5'
+        implementation 'net.logstash.logback:logstash-logback-encoder:8.0'
+        testImplementation project(':srta-common-security')
+    }
+}
+
+project(':srta-common-security') {
+    dependencies {
+        api project(':srta-common-api')
+        api 'org.springframework.boot:spring-boot-starter-security'
+        implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
+        implementation 'org.springframework.boot:spring-boot-starter-webflux'
+    }
+}
+
+project(':srta-common-domain') {
+    dependencies {
+        implementation 'org.springframework.boot:spring-boot-starter-data-r2dbc'
+    }
+}
+
+project(':srta-common-audit') {
+    dependencies {
+        implementation 'org.springframework.boot:spring-boot-starter-amqp'
+        implementation 'io.projectreactor.rabbitmq:reactor-rabbitmq:1.5.6'
+    }
+}

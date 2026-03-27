@@ -1,7 +1,14 @@
 # srta-common Code Review — Architect Findings
 
 > Reviewed: 2026-03-27 | Reviewer: Senior Backend Architect
-> Scope: Security · Logic · Validation · API Design · Test Coverage · Production Readiness
+
+> Scope: 
+> - Security
+> - Logic
+> - Validation
+> - API Design
+> - Test Coverage
+> - Production Readiness
 
 ---
 

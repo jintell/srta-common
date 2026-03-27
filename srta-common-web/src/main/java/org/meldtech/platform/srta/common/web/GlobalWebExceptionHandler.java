@@ -34,7 +34,7 @@ public class GlobalWebExceptionHandler {
         log.warn("Response status exception: {}", ex.getReason());
         HttpStatus status = HttpStatus.valueOf(ex.getStatusCode().value());
         ErrorCode errorCode = mapStatusToErrorCode(status);
-        ApiResponse<Void> response = ApiResponse.error(errorCode, ex.getReason());
+        ApiResponse<Void> response = ApiResponse.<Void>error(errorCode).withDetail(ex.getReason());
         return ResponseEntity.status(status).body(response);
     }
 
@@ -43,10 +43,10 @@ public class GlobalWebExceptionHandler {
         log.warn("Validation failed: {}", ex.getMessage());
         List<ValidationError> errors = ex.getFieldErrors().stream()
                 .map(error -> ValidationError.builder()
-                        .field(error.getField())
+                        .field(error.getField() != null ? error.getField() : "_global")
                         .code(error.getCode())
                         .message(error.getDefaultMessage())
-                        .rejectedValue(error.getRejectedValue())
+                        .rejectedValue(String.valueOf(error.getRejectedValue()))
                         .build())
                 .collect(Collectors.toList());
 
@@ -56,14 +56,14 @@ public class GlobalWebExceptionHandler {
 
     private ErrorCode mapStatusToErrorCode(HttpStatus status) {
         return switch (status) {
-            case NOT_FOUND -> ErrorCode.INTERNAL_ERROR; // Default if specific isn't found not available
-            case UNAUTHORIZED -> ErrorCode.AUTHENTICATION_FAILED;
-            case FORBIDDEN -> ErrorCode.FORBIDDEN;
+            case NOT_FOUND -> ErrorCode.RESOURCE_NOT_FOUND;
+            case UNAUTHORIZED -> ErrorCode.AUTH_AUTHENTICATION_FAILED;
+            case FORBIDDEN -> ErrorCode.AUTH_FORBIDDEN;
             case BAD_REQUEST -> ErrorCode.VALIDATION_ERROR;
-            case CONFLICT -> ErrorCode.USERNAME_EXISTS; // Or generic email/username exists
-            case UNPROCESSABLE_ENTITY -> ErrorCode.WORKFLOW_VIOLATION;
+            case CONFLICT -> ErrorCode.CONFLICT;
+            case UNPROCESSABLE_ENTITY -> ErrorCode.TRADE_WORKFLOW_VIOLATION;
             case TOO_MANY_REQUESTS -> ErrorCode.RATE_LIMIT_EXCEEDED;
-            case SERVICE_UNAVAILABLE -> ErrorCode.CBS_UNAVAILABLE;
+            case SERVICE_UNAVAILABLE -> ErrorCode.DOWNSTREAM_UNAVAILABLE;
             default -> ErrorCode.INTERNAL_ERROR;
         };
     }

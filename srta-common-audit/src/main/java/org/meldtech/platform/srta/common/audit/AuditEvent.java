@@ -1,5 +1,7 @@
 package org.meldtech.platform.srta.common.audit;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Value;
 
@@ -12,8 +14,8 @@ import java.util.Map;
 @Value
 @Builder
 public class AuditEvent {
-    String eventType;
-    String userId;
+    @NotBlank String eventType;
+    @NotBlank String userId;
     String username;
     String entityType;
     String entityId;
@@ -21,5 +23,5 @@ public class AuditEvent {
     String newValue;
     String ipAddress;
     String correlationId;
-    LocalDateTime timestamp;
+    @NotNull LocalDateTime timestamp;
 }

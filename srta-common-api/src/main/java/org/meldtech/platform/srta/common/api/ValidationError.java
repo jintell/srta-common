@@ -12,5 +12,5 @@ public class ValidationError {
     String field;
     String code;
     String message;
-    Object rejectedValue;
+    String rejectedValue;
 }

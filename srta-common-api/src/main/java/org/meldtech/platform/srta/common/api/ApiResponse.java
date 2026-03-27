@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
 import lombok.Value;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 
 /**
@@ -17,16 +17,18 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ApiResponse<T> {
     @Builder.Default
-    LocalDateTime timestamp = LocalDateTime.now();
+    Instant timestamp = Instant.now();
     
     boolean success;
     
     String code;
     
     String message;
-    
+
+    String detail;
+
     T data;
-    
+
     List<ValidationError> errors;
 
     /**
@@ -53,13 +55,29 @@ public class ApiResponse<T> {
     }
 
     /**
-     * Create an error response with an error code and a custom message.
+     * Return a copy of this response with an additional detail message.
      */
-    public static <T> ApiResponse<T> error(ErrorCode errorCode, String message) {
+    public ApiResponse<T> withDetail(String detail) {
         return ApiResponse.<T>builder()
-                .success(false)
-                .code(errorCode.getCode())
-                .message(message)
+                .timestamp(this.timestamp)
+                .success(this.success)
+                .code(this.code)
+                .message(this.message)
+                .detail(detail)
+                .data(this.data)
+                .errors(this.errors)
+                .build();
+    }
+
+    /**
+     * Create a successful paged response wrapped in the standard envelope.
+     */
+    public static <T> ApiResponse<PagedResponse<T>> paged(PagedResponse<T> page) {
+        return ApiResponse.<PagedResponse<T>>builder()
+                .success(true)
+                .code(ErrorCode.SUCCESS.getCode())
+                .message(ErrorCode.SUCCESS.getMessage())
+                .data(page)
                 .build();
     }
 

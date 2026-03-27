@@ -14,7 +14,10 @@ allprojects {
     }
 }
 
-subprojects {
+// Configuration for subprojects that are libraries
+def libraryProjects = subprojects.findAll { it.name != 'srta-common-platform' }
+
+configure(libraryProjects) {
     apply plugin: 'java-library'
     apply plugin: 'org.springframework.boot'
     apply plugin: 'io.spring.dependency-management'
@@ -24,6 +27,7 @@ subprojects {
         toolchain {
             languageVersion = JavaLanguageVersion.of(21)
         }
+        withSourcesJar()
     }
 
     dependencies {
@@ -57,11 +61,55 @@ subprojects {
         publications {
             maven(MavenPublication) {
                 from components.java
+                versionMapping {
+                    usage('java-api') {
+                        fromResolutionOf('runtimeClasspath')
+                    }
+                    usage('java-runtime') {
+                        fromResolutionResult()
+                    }
+                }
             }
         }
         repositories {
             maven {
-                name = "GitHubPackages" //  optional target repository name
+                name = "GitHubPackages"
+                url = 'https://maven.pkg.github.com/jintell/meld-repo'
+                credentials {
+                    username = System.getenv("GITHUB_ACTOR")
+                    password = System.getenv("GITHUB_TOKEN")
+                }
+            }
+        }
+    }
+}
+
+project(':srta-common-platform') {
+    apply plugin: 'java-platform'
+    apply plugin: 'maven-publish'
+
+    dependencies {
+        constraints {
+            libraryProjects.each { project ->
+                api project
+            }
+            // External dependencies that should be aligned
+            api 'org.springdoc:springdoc-openapi-starter-webflux-ui:2.8.5'
+            api 'net.logstash.logback:logstash-logback-encoder:8.0'
+            api 'io.projectreactor.rabbitmq:reactor-rabbitmq:1.5.6'
+            api 'com.tngtech.archunit:archunit-junit5:1.3.0'
+        }
+    }
+
+    publishing {
+        publications {
+            maven(MavenPublication) {
+                from components.javaPlatform
+            }
+        }
+        repositories {
+            maven {
+                name = "GitHubPackages"
                 url = 'https://maven.pkg.github.com/jintell/meld-repo'
                 credentials {
                     username = System.getenv("GITHUB_ACTOR")

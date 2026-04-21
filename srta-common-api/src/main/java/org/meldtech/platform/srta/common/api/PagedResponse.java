@@ -24,7 +24,7 @@ public class PagedResponse<T> {
      * Create a paged response from content and pagination details.
      */
     public static <T> PagedResponse<T> of(List<T> content, int page, int size, long totalElements) {
-        if (page < 0) throw new IllegalArgumentException("Page index must be >= 0, got: " + page);
+        if (page < 1) throw new IllegalArgumentException("Page must be >= 1, got: " + page);
         if (size <= 0) throw new IllegalArgumentException("Page size must be > 0, got: " + size);
         int totalPages = (int) Math.ceil((double) totalElements / size);
         return PagedResponse.<T>builder()
@@ -33,7 +33,7 @@ public class PagedResponse<T> {
                 .size(size)
                 .totalElements(totalElements)
                 .totalPages(totalPages)
-                .last(totalPages == 0 || page >= totalPages - 1)
+                .last(totalPages == 0 || page >= totalPages)
                 .build();
     }
 }

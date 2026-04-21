@@ -59,7 +59,7 @@ class ApiResponseTest {
 
     @Test
     void paged_wrapsPagedResponse() {
-        PagedResponse<String> page = PagedResponse.of(List.of("a", "b"), 0, 10, 2);
+        PagedResponse<String> page = PagedResponse.of(List.of("a", "b"), 1, 10, 2);
         ApiResponse<PagedResponse<String>> response = ApiResponse.paged(page);
 
         assertTrue(response.isSuccess());
